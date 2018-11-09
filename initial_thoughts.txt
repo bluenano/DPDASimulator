@@ -63,7 +63,7 @@ Main()
 		try_pop();
 		if cell==#:
 			failed_pop_sweep(); [goes back to Loop]
-		else: [read head is on 'B' or rightmost '0' of stack]
+		else: [read head is on 'P' of delta tuple]
 			do_push();
 			change_state();
 		endif
