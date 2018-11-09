@@ -1,0 +1,8 @@
+Finish()
+[note finish.jff does not have its own tm for testing as of now]
+
+111QcccF1011B		R	Accept
+111QcccF111B		A	Accept
+111QcccF10111011B	A	Accept
+11QcccF11110111B	R	Accept
+
