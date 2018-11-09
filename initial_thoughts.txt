@@ -1,0 +1,158 @@
+Punctuation will not appear on the input tape.
+
+Let # mean a blank here.
+
+Initial tape symbol possibilities: 1,0,D,F,m
+
+Call a run of 1's an "atom" ?
+
+We may make use of those and other alphanumeric characters.
+
+0's on the tape only separate runs of 1's from other runs of 1's. So this is not given to us: ...1110D
+
+I after init(), tape contents modified from:
+
+  #1011D1010m011011D(...)F101111#
+to:
+#1A1011D1010m011P11D(...)F101111B1#
+
+
+Note the A, P(replaces zero before each push of each delta tuple) and B.
+
+I thought the left region the tape will hold the current state, to the left of the A.
+Rightmost region marked by B will be with rightmost run of 1's being topmost element:
+
+
+NOTE: Multiple symbols can be pushed at once, and it follows the convention used in class of pushing
+right to left first; the leftmost symbol becomes the top of the stack. So, when doing a push and copying to stack,
+copy like {*dest++ = *src--;} Since Reverse(1^N) = 1^N, this works out.
+
+
+A and B will be set once in init() and never modified afterwards. When committing to consuming an "atom"
+from string w, the 1's of that and a potential trailing 0 will be changed to x.
+
+Meanings of other markings (important we need to keep track of these):
+
+
+D->E after a tuple is examined in checking if matches first state and input sym (or its cond is m).
+E->G after a successful try_pop(). (maybe?)
+
+
+A lot of this involves comparing runs of 1's, which involves replacing them with something else.
+It might be good to not use the same replace char for every step.
+
+
+
+__pseudo code__
+
+
+
+[Reject() and AllConsumed() both result in halting]
+
+
+Main()
+{
+	init();
+	forever
+	{
+		[read head is on A]
+		skip any x's;
+		if cell!='1': AllConsumed();
+		findsi();
+		if cell=='F': Reject();
+		try_pop();
+		if cell==#:
+			failed_pop_sweep(); [goes back to Loop]
+		else: [read head is on 'B' or rightmost '0' of stack]
+			do_push();
+			change_state();
+		endif
+	}
+}
+	
+
+[the machine may still have transitions due to stack]
+AllConsumed()
+{
+	[???]
+}
+	
+
+[find a tuple with compatible state and input symbol]
+findsi()
+{
+	Precond:
+	Read head on first '1' of input sym. To the left of that is 'A', on on left of that is current state 1's, then a #.
+
+	Effect:
+	If there is no compatible tuple then read head will be on 'F', and other tape contents do not matter.
+	Else, it changes 1 or more D's to E's starting from the left. If more than one is changed, only the rightmost will have its 1's
+	changed, any tuples before it will have their 1's restored, though 'E' will stick. For the compatible tuple it finds,
+	D110111... will be changed to E440555. Also, the current state 1's will be changed to 2's and the atom of w will be changed to
+	333[0|E], if the input atom cond is not lambda. The read head is positioned on the rightmost 'E'.
+	
+	Impl note:
+	Thinking it would seek leftmost untouched 'D', skipping over any tuples that may have failed
+	the pop test or tuples that don't match on state & in symbol.
+}
+
+
+try_pop()
+{
+	Precond:
+	Called right after non-'F' findsi(), read head is on 'E' of a delta tuple.
+	
+	Effect:
+	If the pop condition for the tuple is m, then just stop the read head on it.
+	Else, compares the top of stack to the pop cond. ONLY CHANGES 1's. In doing this compare,
+	it changes the 1's in the pop atom of the delta tuple to 6, and top of stack 1's to 7.
+	If there is a match, puts read head on 'P' of the delta tuple, else it goes all the way to a #
+	beyond stack.
+	
+	[maybe change the 'E' to 'G' if it helps for do_push(), though if use different digits, probably may not need for that].
+}
+
+failed_pop_sweep()
+{
+	Precond:
+	Entered after unsuccessful pop, read head is on right #.
+	
+	Effect:
+	Sweeps all the way across the tape changing any digits in [2-9] to 1. Then puts read head on 'A'.
+}
+
+do_push()
+{
+	
+}
+
+change_state()
+{
+
+}
+
+[will likely need this, called sometime after AllConsumed()]
+finish()
+{
+	precond: current tape looks like:
+
+	...#111A(...)F101101111B...
+
+	Where the contents of .'s are unknown, but are guaranteed not to have an A, F or B.
+
+	It emits an accept or reject based in if the state to the left of 'A' (our A) is inside the F set.
+
+	to emit Accept:
+	   
+	...A#...
+	   ^
+	where (^) is the read position.
+
+	reject, R instead.
+}
+
+
+IMPORTANT: Make we need to make TM's that inject our block unmodified from how it will fit into the final product and tests it.
+
+
+	
