@@ -137,14 +137,20 @@ DoPush()
 	Precond:
 	TryPop was successful and read head is on P of the delta tuple
 	There may be multiple characters to push to the stack so we always want to
-	copy characters from right to left to the stack. Starting at 'P' search for the 
-	next 'D' or 'F'. Now find previous 0 or 'P', if 0 is found mark it with 'U' and copy the 1s between the
+	copy characters from right to left to the stack. 
+
+	Starting at 'P' move to the right and test if the next character is m, if it 
+	is m then we do not need to push anything.
+    
+    if it is not m, then search for the next 'D' or 'F'. Now find previous 0 or 'P', 
+    if 0 is found mark it with 'U' and copy the 1s between the
 	'U' and 'D' or 'F' or 0 to the top of the stack. Return to the 'U' and replace it 
 	with 0 and repeat the process. If P was found, copy the 1s between the P and
 	the next 0 or 'D' or 'F' to the top of the stack. 
 	When P is found this indicates that it is the last character that needs to be pushed.
 
 	Read head is placed on P 
+
 }
 
 [take care to handle cases when new state is not same length as old, either longer or shorter
