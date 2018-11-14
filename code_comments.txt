@@ -1,0 +1,33 @@
+[1]
+OriginalTape:   # # # 1101 D111010m0101 D10110m110m F1011 # # #
+                      ^
+Init: 		# 1 Q 1101 D111010m0101 D10110m110m F1011 B 1 #
+		  ^
+PrePopFind:	# v Q ww01 E111010m0101 E2033Gm110m F1011 B 1 # (another case is landing on F, if not partially compatible tuple).
+					     ^
+
+PrePopFind()
+{
+	Precond:
+	Read head is on right of #, poiting to first '1' of current state bundle.
+	...#111Q...
+	    ^
+
+	Effect:
+	Read head will stop on 'F' if no compatible tuple can be found based on state and w consume condition.
+	Else, it changes zero or more D's to E's starting from the left. If more than one is changed, only the rightmost will have its 1's
+	changed, any tuples before it will have their 1's restored, though 'E' will stick for all. For the compatible tuple it finds,
+	something like [D110111...] will be changed to [E220333...]. Also, the current state 1's will be changed to v's and the bundle of w will be changed to
+	www (on the right of that will be [0|E]), if the input bundle cond is not lambda and there is a symbol to consume (not all x's).
+	The read head is positioned on the rightmost 'E'.
+	
+	Impl notes:
+	Thinking it would seek leftmost untouched 'D', skipping over any tuples that may have failed
+	the pop test or tuples that don't match on state and in bundle of w.
+}
+
+InCondHelper()
+{
+
+}
+

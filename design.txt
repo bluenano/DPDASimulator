@@ -31,18 +31,31 @@ copy moving right to left from push bundle(s) in delta tuple, and appending to r
 Since Reverse(1^N) = 1^N, this works out.
 
 Q and B will be set once in init() and never modified afterwards. When _committing_ to consuming a bundle
-from string w, the 1's of that and a potential trailing 0 will be changed to x and stay that for good.
+from string w, the 1's of that and a potential trailing 0 will be changed
+to x and stay that for good. (not directly, first they will be changed to an intermediate symbol during state compares)
 
-Meanings of other markings (important we need to keep track of these):
+Meanings of other markings (important we need to keep track of these, consult this when sweeping):
+
+* y: reserved
+* z: reserved
+* C: reserved
+(I may use those in PrePopFind() and Finish())
 
 * 1->digits [2-9] when doing compares at various stages.
 * D->E after a tuple is examined in checking if it matches first state and input bundle (or its cond is m).
-* E->G after a successful TryPop(). (maybe?)
-* y: reserved for Finish()
-* z: reserved for Finish()
+* 0->G after a succesful call to PrePopFind(), the zero in between the partially-compatible tuple's input and pop bundles from 0 to G. 
+* v: what the 1's of the current state var are changed to when doing compares
+* w: what the 1's and potentially trailing zero of the next bundle of the input string are changed to doing compares.
+* w->x: after a fully-compatible transition is found, while sweeping back left w's turn to x's stay that, though see following:
+The sweeping after a full-compat transition is is done in 2 parts. It starts on the right after pushing is done, then moves left and stops
+on the input bundle condition of the tuple. If it is lambda (m), then the w's revert to 1's, else they are set to x and done.
+Maybe this could be done in during some part of OverwriteState. 
+
+
 
 A lot of this involves comparing runs of 1's, which involves replacing them with something else.
-It might be good to not use the same replace char for every step.
+It might be good to not use the same replace char for every step, though limiting the tapes
+vocabulary can be helpful so some nodes don't need a ton of transitions when sweeping.
 
 
 
@@ -99,11 +112,11 @@ UberFind()
 OnF()
 {
 	Precond:
-	Read head is on is on 'F'.
+	Read head is on is on 'F', the first 1 of the current state bundle (on the right of #) is a 1.
 	
 	Effect:
 	Moves left, checks to see if all bundles of w are consumed (all x's, no 1's). If not, emits reject and halts.
-	If they are, moves to one unit right of left #, on top of first '1' of current state.
+	If they are, moves to one unit right of left #, sets that 'v' to '1' and stops on it.
 }
 
 TryPop()
@@ -189,6 +202,23 @@ PDA class notes:
 
 Must consume all input as part acceptance criteria.
 Condition for halting is zero transitions.
+
+
+Example of tape and read head after varous blocks:
+Ignore spaces in tape, are for readability only.
+
+(curState, input, popCond) = (nextState, pushBundle(s))
+
+^ are where the read head is AFTER block executed.
+
+[1]
+OriginalTape:   # # # 1101 D111010m0101 D10110m110m F1011 # # #
+                      ^
+Init: 		# 1 Q 1101 D111010m0101 D10110m110m F1011 B 1 #
+		  ^
+PrePopFind:	# v Q ww01 E111010m0101 E2033Gm110m F1011 B 1 # (another case is landing on F, if not partially compatible tuple).
+					     ^
+[2]
 
 
 
