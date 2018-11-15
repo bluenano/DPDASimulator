@@ -1,0 +1,264 @@
+It may be easier to have ...B0... always instead of ...B10111# as the base stack boundary,
+for the implementor of TryPop(), that is up to you, though I think no extra 0 is more clear
+and Init() is written to not put an extra 0 now.
+
+Check with requirments/teacher:
+- Is it possible to lambda as input string W, or if no transition tuples (no D's) at all. 
+(A): yes, see quote, (B): I think is possible, and PrePushFind() already handles it.
+- Our TM ends in accepting state always, or only if emit 'A' as opposed to 'R'
+"If w, the input string of M, is lambda, then nothing will be put in the w place. In that
+case, the UTM's input string starts with 'D' of the first sub-rule"
+
+See techinical note 3 about setting jflap preferences.
+
+Should do a bit of QA testing when full TM made, construct input tape contents for some DPDAs and string combos,
+like a^nb^n.
+
+# indicates blank symbol and punctuation and whitespace are not tape symbols.
+
+Initial tape symbol possibilities:
+1,0,D,F,m
+
+Our Markers (capitals can only occur once on the tape, excluding D & E):
+-Q: Current state boundary
+-B: Base stack boundary
+-E: Changed from ‘D’ in PrePopFind. after a FailedPopSweep or FullySuccedful transition it must be reset to ‘D’. Used to mark already examined tuples in PrePopFind().
+-G: Marker before pop cond of tuple, cganged from ‘0’.
+-v,2,3: see PrePopFind(). are relevant when doing a sweep. A succesful transition sweep (opposed to FailedPopSweep) need not be aware of v.
+-w: what the 1's of next bundle of string W changed from.
+-x: w->x during SuccessSweep() ___only if input cond was not m___
+    along with a potential trailing 0 (if not up against first D or F) will also be changed to x. If input cond was lambda,
+    reverted to 1's.
+-P: If TryPop is a success, does 0->P between next state and push bundle(s).
+-t: Reserved for OverwriteState(), cannot appear anywhere between Q and P before then.
+-i,j,k: Reserved for coder of DoPush();
+
+forever // halts in OnF()
+{
+    // Read head is on ‘1’, R of #.
+    PrePopFind(); // Jonathan
+    if (cell=='F') OnF(); // Jonathan
+    /*
+    Read head is on singleton ‘G’ of a right-most modified tuple that looks
+    like E2033G... or E20mG..., everything on right of G is untouched.
+    */
+    TryPop();
+    if (cell==#)
+        FailedPopSweep();
+    else //read head is on 'P' of delta tuple, in between next transition state and push bundle(s)
+        Push();
+        OverwriteState();
+        SuccessSweep();
+    fi
+}
+
+
+Contents in (...) are unmodified.
+
+
+PrePopFind()
+{
+    /*
+    Finds a compatible tuple based on state and string input.
+    If it finds one, replaces '0' to 'G' before pop cond and stops on it,
+    else stops on 'F' singleton.
+    */
+    in[0]:  #11Qxxx101D...D...D11010...D...F...
+             ^(1)
+    out[0]: #vvQxxxw01E...E...E2203G...D...F...
+                                   ^(G)
+    in[1]:  #11Qxxx101D...D...D110m0...D...F...
+             ^(1)
+    out[1]: #vvQxxx101E...E...E220mG...D...F...
+                                   ^(G)
+    in[2]:  #11Qxxx101D...D...F...
+             ^(1)
+    out[2]: #vvQxxx101E...E...F...
+                              ^(F)
+    precond:
+    There are no v's, 2's, or 3's any where on the input tape.
+    
+    tape changes:
+    1+      -> v+       : current state var
+    D...D   -> E...E    : mark "Examined"
+    1+      -> 2+       : state of tuple
+    1+      -> w+       : next string bundle
+    1+      -> 3+       : string cond of tuple (if not lambda)
+    0       -> G        : marker in front of pop condition
+    
+    impl note:
+    Skips over any previous E’s until it hits a D or F. So it is important FailedPopSweep() leaves E’s as E’s.
+}
+
+OnF()
+{
+    /*
+    Check to see if all string bundles consumed.
+    If yes, stops on left #. Else, writes an 'R' and stops on it.
+    */
+    in[0]:  #111QxxxxxE...E...F...
+                              ^(F)
+    out[0]: #111QxxxxxE...E...F...
+            ^(#)
+    in[1]:  #111QE...E...F...
+                         ^(F)
+    out[1]: #111QE...E...F...
+            ^(#)
+    in[2]:  #111Qxx111E...E...F...
+                              ^(F)
+    out[2]: #111QxxR11E...E...F...
+                   ^(R)
+    
+    notes:
+    There are 2 outward transitions after this, if it stops on #,
+    then move right and enter StateIsFinal(). Else it stops on R,
+    puts a # to the right of it, moves back and halts.
+}
+
+StateIsFinal()
+{
+    /*
+    Check to see if last written state is in the Final set. 
+    The machine halts, emitting 'A' or 'R' in transducer mode.
+    */
+    
+    in:  #111Q...F110111B...
+          ^(1)
+    out: HALT
+    
+    precond:
+    There are no v's between the only Q and B on the tape.
+}
+
+TryPop()
+{
+    Takes any output from PrePopFind() as input.
+    
+    If pop cond does not match, stops on right #.
+    
+    Else changes 0->P of the sep between the next state and push bundle(s) and stops on it,
+    after it has also replaced the separating 0 from the stack with a #, or the what was the leftmost
+    1 if up against the B. The contents to the right of this new # are then considered undefined.
+    
+    in[0]:  ???G11010m...011#
+               ^(G)
+    out[0]: ???G3301Pm...#22#
+                    ^(P)
+    in[1]:  ???Gm010m???
+               ^(G)
+    out[1]: ???Gm01Pm???
+                   ^(P)
+    in[2]:  ???G1010m...#11#
+               ^(G)
+    out[2]: ???G3010m...012#
+                           ^(#)
+    in[3]:  ???G11010m...B11#
+               ^(G)
+    out[3]: ???G33010m...B#2#
+                          ^(#)
+    precond:
+    no 2's or 3's lie between the G singleton and right #.
+    
+    tape changes:
+    1+      -> 3+       : pop cond of tuple (if not m)
+    1+      -> 2+       : top of stack
+    0       -> P        : marker on left of push sym (if succesful)
+    [0|1]   -> #        : truncate the stack by removing the 0 separator, if not up against the B, else changes what was leftmost 1 of stack.
+    
+    notes:
+    Assume the ??? could be anything. Shouldn't have to worry about them.
+}
+
+FailedPopSweep()
+{
+    Is on a right blank, and goes to and stops on left blank,
+    keeping cells the same, except for:
+    
+    v,w,2,3 -> 1
+    G -> 0
+    E -> D
+    
+    in:     #--------#
+                     ^(#)
+    out:    #~~~~~~~~#
+            ^(#)
+    
+    At main scope, the transition that connects this
+    block to PrePopFind() is (#;#,R)
+}
+
+DoPush()
+{
+    Takes any output from TryPop() as input.
+
+    preconds:
+    Chars i,j,k are reserved for the coder of this, and will not appear any where in between the #-# bounds
+    before this.
+    
+    TryPop was successful and read head is on P of the delta tuple
+    There may be multiple characters to push to the stack so we always want to
+    copy characters from right to left to the stack.
+    
+    effects:
+    Read head is placed on P.
+    
+    NB:
+    Everything to the right of P is in a valid state that the top of the main loop expects.
+    
+    notes:
+    The first cell to write to if the push is not lambda will be #, but the contents
+    to the right of that are undefined. One idea could include a sequence like: (!#;~,R) (1;#,R) (~;#,L).
+    
+    Be aware the push bundle(s) may be bounded by P...D or P...F
+    
+    Starting at 'P' move to the right and test if the next character is m, if it
+    is m then we do not need to push anything.
+    
+    if it is not m, then search for the next 'D' or 'F'. Now find previous 0 or 'P',
+    if 0 is found mark it with 'U' and copy the 1s between the
+    'U' and 'D' or 'F' or 0 to the top of the stack. Return to the 'U' and replace it
+    with 0 and repeat the process. If P was found, copy the 1s between the P and
+    the next 0 or 'D' or 'F' to the top of the stack.
+    When P is found this indicates that it is the last character that needs to be pushed.
+}
+
+
+OverwriteState()
+{
+    On P, new state to copy is bounded by 0...P
+    
+    't' is reserved for the coder of this, and shall not appear
+    anywhere on the tape before are after this.
+    
+    P is changed to 0.
+    
+    in:     #v*#vvvQ...011P
+                          ^(P)
+    out:    #v*#v11Q...0110
+                       ^(0)
+    
+    NB:
+    everything to the right of the stop 0 is valid for the top of the main loop.
+    
+    impl note:
+    An' efficient' that takes care of counting how much to copy and reseting the area in 0...0 (change P to 0 first thing)
+    to 1's could be to only have a single t on the tape at a time. Change 1->t, seek to Q, skip 1's going left, (~;1,R), seek back to that single t, then (t;1,L).
+    Continue unless on 0.
+}
+
+SuccessSweep()
+{
+    Called right after OverwriteState, read pos on 0 see above.
+    Moves one left, if it is 'm' then all w's revert to 1's.
+    Else, the w's become x's as well as a potential 0 on the right of the right-most w.
+    
+    This leftward sweep stops on v or #, whichever comes first, then sets it to # and stops on it.
+    At main scope, the transition that connects this block to PrePopFind() is (#;#,R).
+    
+    Besides the above, these tape changes occur during the sweep:
+    
+    G -> 0
+    all E(s) -> D
+    2,3 -> 1
+}
+
