@@ -241,24 +241,28 @@ OverwriteState()
     everything to the right of the stop 0 is valid for the top of the main loop.
     
     impl note:
-    An' efficient' that takes care of counting how much to copy and reseting the area in 0...0 (change P to 0 first thing)
-    to 1's could be to only have a single t on the tape at a time. Change 1->t, seek to Q, skip 1's going left, (~;1,R), seek back to that single t, then (t;1,L).
-    Continue unless on 0.
+    An' efficient' that takes care of counting how much to copy and reseting the 1's area in 0...0 (change P to 0 first thing)
+    could be to only have a single t on the tape at a time. Change 1->t, seek to Q, skip 1's going left, (~;1,R), seek back to that single t, then (t;1,L).
+    Then continue unless on 0.
 }
 
 SuccessSweep()
 {
     Called right after OverwriteState, read pos on 0 see above.
-    Moves one left, if it is 'm' then all w's revert to 1's.
-    Else, the w's become x's as well as a potential 0 on the right of the right-most w.
     
-    This leftward sweep stops on v or #, whichever comes first, then sets it to # and stops on it.
-    At main scope, the transition that connects this block to PrePopFind() is (#;#,R).
-    
-    Besides the above, these tape changes occur during the sweep:
-    
+    First part make these changes:
     G -> 0
     all E(s) -> D
-    2,3 -> 1
+    all 2,3 -> 1
+    
+    Then stop on Q or a w, whichever comes first. (will be w if string cond was not lambda)
+    
+    If stop on w, move right one, and set a 0 separator to x if it exists (not up against a D).
+    
+    Then both paths can join up, and leave everything the same except
+    w -> x (which may not be there)
+    
+    Sweep then stops on v or #, whichever comes first, then sets it to # and stops on it.
+    At main scope, the transition that connects this block to PrePopFind() is (#;#,R).
 }
 
