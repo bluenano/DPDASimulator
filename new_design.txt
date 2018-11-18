@@ -63,7 +63,7 @@ PrePopFind()
     */
     in[0]:  #11Qxxx101D...D...D11010...D...F...
              ^(1)
-    out[0]: #vvQxxxw01E...E...E2203G...D...F...
+    out[0]: #vvQxxxw01E...E...E2201G...D...F...
                                    ^(G)
     in[1]:  #11Qxxx101D...D...D110m0...D...F...
              ^(1)
@@ -81,7 +81,6 @@ PrePopFind()
     D...D   -> E...E    : mark "Examined"
     1+      -> 2+       : state of tuple
     1+      -> w+       : next string bundle
-    1+      -> 3+       : string cond of tuple (if not lambda)
     0       -> G        : marker in front of pop condition
     
     impl note:
