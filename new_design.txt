@@ -71,7 +71,7 @@ PrePopFind()
                                    ^(G)
     in[2]:  #11Qxxx101D...D...F...
              ^(1)
-    out[2]: #vvQxxx101E...E...F...
+    out[2]: #11Qxxx101E...E...F...
                               ^(F)
     precond:
     There are no v's, 2's, or 3's any where on the input tape.
@@ -252,7 +252,7 @@ OverwriteState()
                            ^(0)
     
     impl note:
-    An' efficient' that takes care of counting how much to copy and reseting the 1's area in 0...0 (change P to 0 first thing)
+    An idea that takes care of tracking when to stop copying and reseting the 1's area in 0...0 (change P to 0 first thing)
     could be to only have a single t on the tape at a time. Change 1->t, seek to Q, skip 1's going left, (~;1,R), seek back to that single t, then (t;1,L).
     Then continue unless on 0.
 }
