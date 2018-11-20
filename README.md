@@ -7,4 +7,4 @@ Pushdown Automata on an input string.
 The following is an example that checks to see
 if a run of ones bounded by #...Q
 is in a final set to the right that may look like F111011B
-![abc](./IsStateFinal.jpg)
+![abc](./GotF/IsStateFinal.jpg)

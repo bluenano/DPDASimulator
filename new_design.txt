@@ -31,11 +31,11 @@ Our Markers (capitals can only occur once on the tape, excluding D & E):
 -t: Reserved for OverwriteState(), cannot appear anywhere between Q and P before then.
 -i,j,k: Reserved for coder of DoPush();
 
-forever // halts in OnF()
+forever // halts in GotF()
 {
     // Read head is on ‘1’, R of #.
     PrePopFind(); // Jonathan
-    if (cell=='F') OnF(); // Jonathan
+    if (cell=='F') GotF(); // Jonathan
     /*
     Read head is on singleton ‘G’ of a right-most modified tuple that looks
     like E2033G... or E20mG..., everything on right of G is untouched.
@@ -87,22 +87,22 @@ PrePopFind()
     Skips over any previous E’s until it hits a D or F. So it is important FailedPopSweep() leaves E’s as E’s.
 }
 
-OnF()
+GotF()
 {
     /*
     Check to see if all string bundles consumed.
     If yes, stops on left #. Else, writes an 'R' and stops on it.
     */
-    in[0]:  #111QxxxxxE...E...F...
-                              ^(F)
+    in[0]:  #111QxxxxxE...E..~F...
+                             ^(~)
     out[0]: #111QxxxxxE...E...F...
             ^(#)
     in[1]:  #111QE...E...F...
-                         ^(F)
+                        ^(~)
     out[1]: #111QE...E...F...
             ^(#)
     in[2]:  #111Qxx111E...E...F...
-                              ^(F)
+                             ^(~)
     out[2]: #111QxxR11E...E...F...
                    ^(R)
     
@@ -110,7 +110,12 @@ OnF()
     There are 2 outward transitions after this, if it stops on #,
     then move right and enter StateIsFinal(). Else it stops on R,
     puts a # to the right of it, moves back and halts.
+    
+    impl:
+    since know GotF, everything to the left is the same as it was on start of main loop iteration,
+    except all D's->E's.
 }
+
 
 StateIsFinal()
 {
