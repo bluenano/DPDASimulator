@@ -1,6 +1,4 @@
-It may be easier to have ...B0... always instead of ...B10111# as the base stack boundary,
-for the implementor of TryPop(), that is up to you, though I think no extra 0 is more clear
-and Init() is written to not put an extra 0 now.
+
 
 Check with requirments/teacher:
 - Is it possible to lambda as input string W, or if no transition tuples (no D's) at all. 
@@ -65,7 +63,7 @@ PrePopFind()
     */
     in[0]:  #11Qxxx101D...D...D11010...D...F...
              ^(1)
-    out[0]: #vvQxxxw01E...E...E2203G...D...F...
+    out[0]: #vvQxxxw01E...E...E2201G...D...F...
                                    ^(G)
     in[1]:  #11Qxxx101D...D...D110m0...D...F...
              ^(1)
@@ -83,7 +81,6 @@ PrePopFind()
     D...D   -> E...E    : mark "Examined"
     1+      -> 2+       : state of tuple
     1+      -> w+       : next string bundle
-    1+      -> 3+       : string cond of tuple (if not lambda)
     0       -> G        : marker in front of pop condition
     
     impl note:
@@ -136,9 +133,18 @@ TryPop()
     
     If pop cond does not match, stops on right #.
     
-    Else changes 0->P of the sep between the next state and push bundle(s) and stops on it,
-    after it has also replaced the separating 0 from the stack with a #, or the what was the leftmost
-    1 if up against the B. The contents to the right of this new # are then considered undefined.
+    Else (is match) changes 0->P of the sep between the next state and push bundle(s) and stops on it. Then...
+    
+    Option 1:
+        Replace the leftmost changed '1' on the stack with a #. There is either a '0' or the 'B'
+        before this newly placed #, so DoPush() is ready to begin writing at the first # it finds.
+        Init() should be changed to make the right side of the stack have a 0 before a # then. This option is not
+        the current reference for the ins of DoPush().
+    Option 2:
+        Replace separating 0 from the stack with a #, or the what was the leftmost
+        1 if up against the B.
+    
+     The contents to the right of the newly written # may be considered undefined.
     
     in[0]:  ???G11010m...011#
                ^(G)
@@ -151,11 +157,11 @@ TryPop()
     in[2]:  ???G1010m...#11#
                ^(G)
     out[2]: ???G3010m...012#
-                           ^(#)
+                           ^(#) /*bad pop*/
     in[3]:  ???G11010m...B11#
                ^(G)
-    out[3]: ???G33010m...B#2#
-                          ^(#)
+    out[3]: ???G3301Pm...B#2#
+                    ^(P)
     precond:
     no 2's or 3's lie between the G singleton and right #.
     
@@ -189,10 +195,12 @@ FailedPopSweep()
 
 DoPush()
 {
-    Takes any output from TryPop() as input.
+    Takes any output from TryPop() as input:
+    P...[D|F]
+    ^(P)
 
     preconds:
-    Chars i,j,k are reserved for the coder of this, and will not appear any where in between the #-# bounds
+    Chars i,j,k are reserved for the coder of this, and will not appear any where in between the innermost #-# bounds
     before this.
     
     TryPop was successful and read head is on P of the delta tuple
@@ -227,18 +235,21 @@ OverwriteState()
 {
     On P, new state to copy is bounded by 0...P
     
+    precond:
     't' is reserved for the coder of this, and shall not appear
     anywhere on the tape before are after this.
     
-    P is changed to 0.
+    what is on the left of Q on can be anything, except '1'.
     
-    in:     #v*#vvvQ...011P
-                          ^(P)
-    out:    #v*#v11Q...0110
-                       ^(0)
-    
-    NB:
+    effect:
+    P is changed to 0, puts the right amount of 1's on the left of Q,
+    then stops on 0 on the left of the source bundle. Also, note well that
     everything to the right of the stop 0 is valid for the top of the main loop.
+    
+    in:     !1 !1 !1 Q ... 0 1 1 P
+                                 ^(P)
+    out:    !1  1  1 Q ... 0 1 1 0
+                           ^(0)
     
     impl note:
     An' efficient' that takes care of counting how much to copy and reseting the 1's area in 0...0 (change P to 0 first thing)
@@ -257,12 +268,9 @@ SuccessSweep()
     
     Then stop on Q or a w, whichever comes first. (will be w if string cond was not lambda)
     
-    If stop on w, move right one, and set a 0 separator to x if it exists (not up against a D).
+    If stop on w, move right one, and set a 0 separator to x if it exists (not up against a D),
+    then it moves left towards Q, changing all w's to x's and leaving x's after that the same.
     
-    Then both paths can join up, and leave everything the same except
-    w -> x (which may not be there)
-    
-    Sweep then stops on v or #, whichever comes first, then sets it to # and stops on it.
-    At main scope, the transition that connects this block to PrePopFind() is (#;#,R).
+    After it hits 'Q', it moves left until !1, then changes whatever it was to # and stops on it.
 }
 

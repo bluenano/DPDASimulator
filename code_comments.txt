@@ -1,0 +1,5 @@
+PrePopFind()
+{
+	q0: consume 1 of current state if exists, seek to an unexamined tuple (D) and mark it (E), or seek last marked (2).
+}
+
