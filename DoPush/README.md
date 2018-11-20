@@ -1,20 +1,20 @@
-## doPush
+## DoPush
 
 ![](images/DoPush.jpg?raw=true)
 
-### addStackSep
+### AddStackSep
 
 ![](images/AddStackSep.jpg?raw=true)
 
-### findDorForj
+### FindDorForj
 
 ![](images/FindDorForj.jpg?raw=true)
 
-### copyToStack
+### CopyToStack
 
 ![](images/CopyToStack.jpg?raw=true)
 
-### cleanUp
+### CleanUp
 
 ![](images/CleanUp.jpg?raw=true)
 
