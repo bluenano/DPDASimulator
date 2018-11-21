@@ -9,7 +9,7 @@ in the main TM scope. So I put that (~,~,S) at the end of Test_GotF.
 ![](IsStateFinal.jpg)
 
 ### Test_GotF:
-![] (Test_GotF.jpg)
+![](Test_GotF.jpg)
 
 Test_GotF multi-run (Transducer) data:
 
