@@ -10,9 +10,16 @@ is in a final set to the right that may look like F111011B
 ![abc](./GotF/IsStateFinal.jpg)
 
 What main looks like, some of the handoff conventions are inconsistent, idk which is best and most of it is written already:  
-![](./Main.jpg)
+![](./celebrity.png)
 
-WE HAVE LIFT OFF (kinda, see notes at end of test data for how celebrity DPDA fails when has to go FailPop route)  
+### WE HAVE LIFT OFF...  
+...but could use more testing. Think should focus mostly on unit testing blocks.  
 
+Edge cases:  
 
+* instead of excpeting 0 got E,F,B,G,P or something. In general stuff that could be in / not be in the typical range or boundaries.
+
+* push multiple bundles of different lengths  
+
+* lambdas  
 
