@@ -13,10 +13,7 @@ in the main TM scope. So I put that (~,~,S) at the end of Test_GotF.
 
 Test_GotF multi-run (Transducer) data:
 
-111QxxxE10m011m0mF111B	A	Accept  
-
-111Qxxx1E10m011m0mF111B	R	Accept  
-
-111Q1E10m011m0mF111B	R	Accept  
-
-111QE10m011m0mF111B	A	Accept  
+v11QxxxE10m011m0mF111B	A	Accept
+v11Qxxx1E10m011m0mF111B	R	Accept
+v11Q1E10m011m0mF111B	R	Accept
+v11QE10m011m0mF111B	A	Accept

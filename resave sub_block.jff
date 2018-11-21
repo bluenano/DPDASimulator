@@ -59,8 +59,8 @@
 		<transition>&#13;
 			<from>3</from>&#13;
 			<to>3</to>&#13;
-			<read>!v</read>&#13;
-			<write>~</write>&#13;
+			<read>!□</read>&#13;
+			<write>v</write>&#13;
 			<move>L</move>&#13;
 		</transition>&#13;
 		<transition>&#13;
