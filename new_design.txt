@@ -1,3 +1,6 @@
+Edit: Made the general convention in most cases that the end of a block
+stops on a marker, and beginning of blocks start to the left or right of that marker.
+At main scope, the connecting transition can move L or R. DoPush and TryPop left as is though.
 
 
 Check with requirments/teacher:
@@ -182,16 +185,16 @@ TryPop()
 
 FailedPopSweep()
 {
-    Is on a right blank, and goes to and stops on left blank,
+    Is L of innermost right blank, and goes to and stops on left blank,
     keeping cells the same, except for:
     
     v,w,2,3 -> 1
     G -> 0
     E -> D
     
-    in:     #--------#
-                     ^(#)
-    out:    #~~~~~~~~#
+    in:     #........~#
+                     ^(~)
+    out:    #(modified)#
             ^(#)
     
     At main scope, the transition that connects this
@@ -236,9 +239,16 @@ DoPush()
 }
 
 
+
+NB: the bottom two have been combined into CopyState().
+The ins/precond are the same as the ins to OverwriteState, and outs/effects
+same as SuccessSweep.
+
+
 OverwriteState()
 {
-    On P, new state to copy is bounded by 0...P
+    After entry points to rightmost '1' of state to copy, on left of what was P.
+    End of 1's to copy going leftward delimeted by '0'.
     
     precond:
     't' is reserved for the coder of this, and shall not appear
@@ -247,12 +257,12 @@ OverwriteState()
     what is on the left of Q on can be anything, except '1'.
     
     effect:
-    P is changed to 0, puts the right amount of 1's on the left of Q,
+    Puts the right amount of 1's on the left of Q,
     then stops on 0 on the left of the source bundle. Also, note well that
     everything to the right of the stop 0 is valid for the top of the main loop.
     
-    in:     !1 !1 !1 Q ... 0 1 1 P
-                                 ^(P)
+    in:     !1 !1 !1 Q ... 0 1 1 0
+                               ^(1)
     out:    !1  1  1 Q ... 0 1 1 0
                            ^(0)
     
@@ -264,12 +274,12 @@ OverwriteState()
 
 SuccessSweep()
 {
-    Called right after OverwriteState, read pos on 0 see above.
+    Called right after OverwriteState, read pos on left of 0 as above.
     
     First part make these changes:
     G -> 0
     all E(s) -> D
-    all 2,3 -> 1
+    all 2(s) -> 1
     
     Then stop on Q or a w, whichever comes first. (will be w if string cond was not lambda)
     
